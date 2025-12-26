@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Affiliate Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Navbar -->
+
+<header class="bg-gray-900 shadow-2xl sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+    <a href="index.html" class="flex items-center gap-3 text-white">
+      <span id="welcomeUser" class="text-yellow-400 font-medium text-sm hidden sm:inline">Loading...</span>
+      <div class="flex items-center">
+        <span class="text-3xl font-extrabold tracking-tight">Prompt<span class="text-blue-400">Hub</span></span>
+      </div>
+    </a>
+
+    <nav class="hidden md:flex items-center space-x-8 text-base"> 
+      <a href="index.html" class="text-blue-400 border-b-2 border-blue-400 pb-1 font-semibold transition duration-150">Home</a> 
+      <a href="affiliate.html" class="text-gray-300 hover:text-blue-400 hover:border-b-2 hover:border-blue-400 pb-1 transition duration-150 font-medium">Affiliate</a>
+      <span id="dashboardLinkContainer"></span> 
+      <span id="dashboardLinks"></span>
+
+      <button onclick="toggleCart(event)" type="button" class="relative p-3 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-full transition duration-150 focus:outline-none focus:ring-4 focus:ring-yellow-500/50">
+        <span class="text-xl">🛒</span>
+        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-md">0</span>
+      </button>
+
+      <button id="logoutBtn" type="button" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition duration-150 shadow-md">Logout</button>
+    </nav>
+    
+    <button id="mobileBtn" type="button" class="md:hidden text-white hover:text-blue-400 text-3xl p-1 transition">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+    </button> 
+  </div>
+</header>
+
+<div id="mobileMenu" class="hidden md:hidden fixed inset-0 top-20 bg-gray-900/95 backdrop-blur-sm z-40 p-4">
+  <nav class="flex flex-col space-y-4 text-lg">
+    <a href="index.html" class="text-blue-400 font-semibold py-2 border-b border-gray-700">Home</a>
+    <a href="affiliate.html" class="text-gray-300 hover:text-blue-400 py-2 border-b border-gray-700">Become Affiliate</a>
+    <span id="dashboardLinkContainerMobile"></span> 
+    <span id="dashboardLinksMobile"></span>
+
+    <button onclick="toggleCart(event)" type="button" class="flex items-center justify-between mt-4 p-3 bg-yellow-500 text-gray-900 rounded-lg font-bold">
+      <span>View Cart</span>
+      <span class="flex items-center gap-2">
+        🛒 
+        <span id="cartCountMobile" class="bg-red-600 text-white text-sm rounded-full px-2 py-0.5">0</span>
+      </span>
+    </button>
+    
+    <button id="logoutBtnMobile" type="button" class="px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg text-lg font-semibold transition duration-150 w-full mt-4">Logout</button>
+  </nav>
+</div>
+
+  <!-- Dashboard -->
+  <section class="px-6 py-12">
+    <h2 class="text-2xl font-bold mb-6">Overview</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Referral Link -->
+      <div class="bg-white p-6 rounded-2xl shadow flex flex-col gap-2">
+        <h3 class="font-semibold mb-2">Your Referral Link</h3>
+        <div class="flex gap-2">
+          <input id="refLink" class="flex-1 border p-2 rounded" readonly>
+          <button 
+            id="copyRefBtn" 
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Copy
+          </button>
+        </div>
+        <span id="copyMsg" class="text-green-600 text-sm hidden">Link copied!</span>
+      </div>
+
+      <!-- Sales Score -->
+      <div class="bg-white p-6 rounded-2xl shadow">
+        <h3 class="font-semibold mb-2">Total Earnings</h3>
+        <p id="salesScore" class="text-3xl font-bold text-green-600">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Sales Table -->
+    <div class="mt-12 bg-white p-6 rounded-2xl shadow overflow-x-auto">
+      <h3 class="font-semibold mb-4">Sales History</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse min-w-[600px]">
+          <thead>
+            <tr class="bg-gray-100 text-left">
+              <th class="p-2 border">Order Ref</th>
+              <th class="p-2 border">Buyer</th>
+              <th class="p-2 border">Email</th>
+              <th class="p-2 border">Items</th>
+              <th class="p-2 border">Amount</th>
+              <th class="p-2 border">Date</th>
+            </tr>
+          </thead>
+          <tbody id="salesTable">
+            <tr><td colspan="6" class="p-4 text-center text-gray-400">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  
+<!-- Cart Modal -->
+<div id="cartModal" class="hidden fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm">
+    <h2 class="text-3xl font-bold mb-4 text-gray-900">Your Cart 🛒</h2>
+    <div id="cartItems" class="mb-6 border-t pt-4 max-h-60 overflow-y-auto"></div>
+    <div class="flex flex-col gap-3">
+      <button id="checkoutBtn" type="button" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition hidden" onclick="checkoutCart(event)">
+          Proceed to Checkout
+      </button>
+      <button type="button" onclick="toggleCart(event)" class="text-gray-600 hover:text-gray-900 text-sm">Continue Shopping</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000/api";
+let cart = [];
+
+
+// =================== AUTH ===================
+function getToken() {
+
+
+  const token =localStorage.getItem("access_token");
+  if(token){
+    return token;
+  
+  }
+  window.location.href='login.html'
+  
+  }
+
+  
+// =================== USER ===================
+async function fetchUser() {
+const token = getToken();
+  const res = await fetch(`${API_BASE}/auth/user/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (res.status === 401) {
+    localStorage.removeItem("access_token");
+    return window.location.href = "login.html";
+  }
+
+  return await res.json();
+}
+
+async function loadUser() {
+  const user = await fetchUser();
+  if (!user) {
+    showToast("Session expired. Please log in.");
+    return;
+  }
+
+  document.getElementById("welcomeUser").textContent = "Welcome " + user.user_name;
+
+  if (user.is_affiliate) {
+    document.getElementById("dashboardLinkContainer").innerHTML =
+      `<a href="dashboard.html" class="text-gray-300 hover:text-blue-400 transition">Dashboard</a>`;
+  }
+
+  if (user.is_partner) {
+    document.getElementById("dashboardLinks").innerHTML =
+      `<a href="partner_dashboard.html" class="text-gray-300 hover:text-blue-400 transition">Partner Dashboard</a>`;
+  }
+}
+
+// =================== CART ===================
+async function loadCart() {
+  const token = getToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/cart/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      cart = data.items || [];
+      renderCart();
+    }
+  } catch (err) {
+    console.error("Load cart error:", err);
+  }
+}
+
+async function saveCart() {
+  const token = getToken();
+  if (!token) return;
+
+  try {
+    await fetch(`${API_BASE}/cart/`, {
+      method: "PUT",
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ items: cart })
+    });
+  } catch (err) {
+    console.error("Save cart error:", err);
+  }
+}
+
+function addToCart(event, name, price) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  cart.push({ name, price });
+  renderCart();
+  saveCart();
+  showToast(`✅ ${name} added to cart`);
+}
+
+function removeFromCart(event, index) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  cart.splice(index, 1);
+  renderCart();
+  saveCart();
+  showToast("🗑️ Item removed");
+}
+
+function renderCart() {
+  const cartDiv = document.getElementById("cartItems");
+  const cartCount = document.getElementById("cartCount");
+  const cartCountMobile = document.getElementById("cartCountMobile");
+
+  if (!cartDiv) return;
+
+  if (cart.length === 0) {
+    cartDiv.innerHTML = "<p class='text-gray-500'>Cart is empty.</p>";
+    cartCount.textContent = 0;
+    if (cartCountMobile) cartCountMobile.textContent = 0;
+    document.getElementById("checkoutBtn").classList.add("hidden");
+    return;
+  }
+
+  cartDiv.innerHTML = cart.map((item, i) => `
+    <div class="flex justify-between border-b py-2">
+      <span>${item.name} - ₦${item.price}</span>
+      <button type="button" class="text-red-500 hover:text-red-700" onclick="removeFromCart(event, ${i})">Remove</button>
+    </div>
+  `).join("");
+
+  cartCount.textContent = cart.length;
+  if (cartCountMobile) cartCountMobile.textContent = cart.length;
+  document.getElementById("checkoutBtn").classList.remove("hidden");
+}
+
+function toggleCart(event) {
+  event?.preventDefault();
+  event?.stopPropagation();
+  document.getElementById("cartModal").classList.toggle("hidden");
+}
+
+// =================== DASHBOARD ===================
+async function fetchAffiliateDashboard() {
+  try {
+    const user = await fetchUser();
+    if (!user.is_affiliate) {
+      alert("You are not an affiliate yet!");
+      return window.location.href = "index.html";
+    }
+
+    const token = getToken();
+    const res = await fetch(`${API_BASE}/dashboard/affiliate/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("access_token");
+      return window.location.href = "login.html";
+    }
+
+    const data = await res.json();
+
+    // Referral link
+    document.getElementById("refLink").value =
+      `${window.location.origin}/register.html?ref=${user.referral_code}`;
+
+    // Earnings
+    document.getElementById("salesScore").textContent = `₦${data.affilate_earn}`;
+
+    // Populate sales table
+    const tableBody = document.getElementById("salesTable");
+    tableBody.innerHTML = "";
+
+    if (data.order.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-500">No sales yet</td></tr>`;
+      return;
+    }
+
+    data.order.forEach(s => {
+      tableBody.innerHTML += `
+        <tr>
+          <td class="border p-2">${s.payment_ref}</td>
+          <td class="border p-2">${s.user_name}</td>
+          <td class="border p-2">${s.email}</td>
+          <td class="border p-2">${s.items?.map(item => item.name).join(", ") || "No items"}</td>
+          <td class="border p-2">₦${s.amount}</td>
+          <td class="border p-2">${s.created_at}</td>
+        </tr>
+      `;
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert("Error loading dashboard");
+  }
+}
+
+// =================== TOAST ===================
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.remove("hidden", "opacity-0");
+  setTimeout(() => {
+    toast.classList.add("opacity-0");
+    setTimeout(() => toast.classList.add("hidden"), 500);
+  }, 3000);
+}
+
+// =================== COPY REF LINK ===================
+document.getElementById("copyRefBtn")?.addEventListener("click", () => {
+  navigator.clipboard.writeText(document.getElementById("refLink").value);
+  document.getElementById("copyMsg").classList.remove("hidden");
+  setTimeout(() => document.getElementById("copyMsg").classList.add("hidden"), 2000);
+});
+
+// =================== LOGOUT ===================
+document.getElementById("logoutBtn")?.addEventListener("click", () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  window.location.href = "login.html";
+});
+
+document.getElementById("logoutBtnMobile")?.addEventListener("click", () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  window.location.href = "login.html";
+});
+
+// =================== INIT ===================
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadUser();
+  await fetchAffiliateDashboard();
+  await loadCart();
+});
+
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.toggleCart = toggleCart;
+</script>
+
+
+</body>
+</html>

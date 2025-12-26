@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Prompts - Prompt Zuko</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f7f7f7; }
+        .prompt-card:hover { transform: translateY(-2px); transition: 0.2s; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-[#f7f7f7]">
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-black text-white px-6 py-3 rounded-lg shadow-2xl opacity-0 transition-opacity duration-500 hidden z-50 font-semibold pointer-events-none"></div>
+
+    <header class="w-full bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+         <div class="flex items-center justify-between px-6 lg:px-12 py-4">
+
+    <!-- LEFT: Logo -->
+    <div class="flex items-center space-x-3">
+      <div class="text-xl font-bold">Prompt Zuko</div>
+      <span id="welcomeUser" class="text-blue-500 font-medium text-xs sm:text-sm hidden sm:inline">
+          Guest
+</span>
+
+    </div>
+
+    <!-- DESKTOP NAV -->
+    <nav class="hidden md:flex space-x-8 text-gray-600 font-medium items-center">
+      <a href="index.html" class="hover:text-gray-900">Home</a>
+      <!-- <a href="#" class="hover:text-gray-900 font-bold text-gray-900"></a>
+       <a href="affiliate.html" class="text-gray-300 hover:text-blue-400 hover:border-b-2 hover:border-blue-400 pb-1 transition duration-150 font-medium" ></a>
+      <span id="dashboardLinkContainer"></span> 
+      <span id="dashboardLinks"></span> -->
+
+
+      <!-- CART BUTTON -->
+      <button onclick="toggleCart(event)" 
+              type="button" 
+              class="relative p-3 bg-yellow-500 hover:bg-yellow-400 text-gray-900 rounded-full transition focus:outline-none focus:ring-4 focus:ring-yellow-500/50">
+        <span class="text-xl">🛒</span>
+        <span id="cartCount" 
+              class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-md">0</span>
+      </button>
+
+    </nav>
+
+    <!-- DESKTOP LOGOUT -->
+<button id="authBtn" 
+        class=" px-5 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition shadow-md">
+  Logout
+  </button>
+
+
+    <!-- MOBILE MENU BUTTON -->
+    <button id="mobileBtn" class="md:hidden text-2xl">
+      ☰
+    </button>
+
+  </div>
+
+  <!-- MOBILE MENU -->
+  <div id="mobileMenu" class="hidden md:hidden bg-white border-t px-6 py-4 space-y-4">
+
+    <a href="index.html" class="block text-gray-700 font-medium hover:text-gray-900">Home</a>
+    <!-- <a href="#" class="block text-gray-700 font-bold text-gray-900">Prompts</a>
+     -->
+
+    <!-- Mobile Cart Button -->
+    <button onclick="toggleCart(event)" 
+            type="button" 
+            class="relative flex items-center gap-2 p-3 bg-yellow-500 w-full justify-center rounded-lg text-gray-900 hover:bg-yellow-400 transition">
+      <span class="">🛒 Cart</span>
+      <span id="cartCountMobile" 
+            class="bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-md">
+        0
+      </span>
+    </button>
+
+    <!-- Mobile Logout -->
+    <button id="logoutBtnMobile" 
+        class="hidden w-full px-5 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition shadow-md">
+  Logout
+</button>
+
+
+  </div>
+
+    </header>
+
+    <div id="cartModal" class="hidden fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm mx-4">
+            <h2 class="text-2xl font-bold mb-4 text-gray-900">Your Cart 🛒</h2>
+            <div id="cartItems" class="mb-6 border-t pt-4 max-h-60 overflow-y-auto"></div>
+            <div class="flex flex-col gap-3">
+                <button id="checkoutBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold transition hidden" onclick="checkoutCart(event)">Proceed to Checkout</button>
+                <button onclick="toggleCart(event)" class="text-gray-600 hover:text-gray-900 text-sm">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow py-12">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 gap-6">
+                <div class="text-center md:text-left">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-2">Prompts Catalog</h3>
+                    <p class="text-gray-500">Browse high-quality prompts for your favorite AI tools.</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <input type="text" id="searchInput" placeholder="Search a prompt" oninput="searchPDFs()" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-64">
+                    <select class="border border-gray-300 rounded-lg px-4 py-2 bg-white"><option>All Fields</option></select>
+                </div>
+            </div>
+
+            <div id="pdfSection" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 py-10 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 lg:px-12">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-lg font-bold text-white">Prompt Zuko</div>
+                <div class="text-sm">
+                    &copy; 2023 Prompt Zuko. All rights reserved.
+                </div>
+                <div class="flex space-x-6 text-sm">
+                    <a href="terms.html" class="hover:text-white transition">Privacy</a>
+                    <a href="terms.html" class="hover:text-white transition">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+<script>
+    const API_BASE = "http://127.0.0.1:8000/api";
+   
+   //const API_BASE = "https://prompt-zuko.onrender.com/api";
+   
+   
+   
+   
+   
+   // ---------------- AUTH HELPERS ----------------
+   function getToken() {
+     const token = localStorage.getItem("access_token");
+     
+      if (!token) {
+       showToast("⚠️ Please log in to puchace Products");
+       return;
+     }
+     return token;
+     
+   
+   }
+   
+   // Fetch logged-in user
+   async function fetchUser() {
+     try {
+       const token = getToken();
+       if (!token) return null;
+       const res = await fetch(`${API_BASE}/auth/user/`, {
+         headers: { "Authorization": `Bearer ${token}` }
+       });
+       if (!res.ok) return null;
+       return res.json();
+     } catch (e) {
+       console.error("Fetch user error:", e);
+       return null;
+     }
+   }
+   
+   async function loadUser() {
+     const user = await fetchUser();
+   
+     const authBtn = document.getElementById("authBtn");
+     const authBtnMobile = document.getElementById("authBtnMobile");
+     const welcomeUser = document.getElementById("welcomeUser");
+   
+     if (!user) {
+       // User not logged in
+       welcomeUser.classList.add("hidden");
+       if (authBtn) {
+         authBtn.textContent = "Sign Up";
+         authBtn.onclick = () => window.location.href = "login.html";
+       }
+       if (authBtnMobile) {
+         authBtnMobile.textContent = "Sign Up";
+         authBtnMobile.onclick = () => window.location.href = "login.html";
+       }
+       return;
+     }
+   
+     // User logged in
+     welcomeUser.textContent = "Welcome " + user.user_name;
+     welcomeUser.classList.remove("hidden");
+   
+     if (authBtn) {
+       authBtn.textContent = "Logout";
+       authBtn.onclick = logout;
+     }
+     if (authBtnMobile) {
+       authBtnMobile.textContent = "Logout";
+       authBtnMobile.onclick = logout;
+     }
+   }
+   
+   
+   
+   // Logout
+   async function logout() {
+     const refreshToken = localStorage.getItem("refresh_token");
+     try {
+       if (refreshToken) {
+         await fetch(`${API_BASE}/auth/logout/`, {
+           method: "POST",
+           headers: {
+             "Content-Type": "application/json",
+             "Authorization": `Bearer ${getToken()}`
+           },
+           body: JSON.stringify({ refresh: refreshToken })
+         });
+       }
+     } catch (err) {
+       console.error("Server logout failed:", err);
+     } finally {
+       localStorage.removeItem("access_token");
+       localStorage.removeItem("refresh_token");
+       window.location.href = "login.html";
+     }
+   }
+    document.getElementById("authBtn").addEventListener("click", logout);
+   
+   // document.getElementById("logoutBtnMobile").addEventListener("click", logout);
+   
+   
+   // --------------- CART (database-only) ---------------
+   
+   /*
+    Expected endpoints (adjust if your backend uses other routes):
+     - GET    /api/cart/                -> { items: [ { id, product_id, name, price }, ... ] }
+     - POST   /api/cart/items/          -> body { product_id, name, price }   (adds item)
+     - DELETE /api/cart/items/{item_id}/ (removes item)
+   */
+   
+   // Fetch cart from server and render (no global cart array)
+   async function renderCartFromServer() {
+     try {
+       const token = getToken();
+       if (!token) return [];
+       const res = await fetch(`${API_BASE}/cart/`, {
+         headers: { "Authorization": `Bearer ${token}` }
+       });
+       if (!res.ok) {
+         console.error("Failed to fetch cart:", res.status);
+         return [];
+       }
+       const data = await res.json();
+       const items = data.items || [];
+       _renderCartItems(items); // still render
+       return items; // <-- return items so checkoutCart can use it
+     } catch (err) {
+       console.error("renderCartFromServer error:", err);
+       return [];
+     }
+   }
+   
+   
+   // Internal renderer (pure DOM update)
+   function _renderCartItems(items) {
+     const cartDiv = document.getElementById("cartItems");
+     const cartCount = document.getElementById("cartCount");
+     const cartCountMobile = document.getElementById("cartCountMobile");
+   
+     if (!cartDiv) return;
+   
+     if (!items || items.length === 0) {
+       cartDiv.innerHTML = "<p class='text-gray-500'>Cart is empty.</p>";
+       cartCount.textContent = 0;
+   
+       if (cartCountMobile) cartCountMobile.textContent = 0;
+       document.getElementById("checkoutBtn").classList.add("hidden");
+       return;
+     }
+   
+     cartDiv.innerHTML = items.map((item,index) => `
+       <div class="flex justify-between border-b py-2">
+         <span>${escapeHtml(item.name)} - ₦${Number(item.price)}</span>
+         <button type="button" class="text-red-500 hover:text-red-700" onclick="removeFromCart(event, ${index})">Remove</button>
+       </div>
+     `).join("");
+   
+   
+     cartCount.textContent = items.length;
+     if (cartCountMobile) cartCountMobile.textContent = items.length;
+     document.getElementById("checkoutBtn").classList.remove("hidden");
+     console.log(items);
+   
+   }
+   
+   
+   // Add item to database cart
+   async function addToCart(event, productId, name, price) {
+     event.preventDefault();
+     event.stopPropagation();
+   
+     try {
+       const token = getToken();
+         if (!token) {
+       // Only show toast, no redirect
+       showToast("⚠️ Please log in to add items to your cart");
+       return;
+     }
+   
+       const res = await fetch(`${API_BASE}/cart/add_to_cart/`, {
+         method: "POST",
+         headers: {
+           "Authorization": `Bearer ${token}`,
+           "Content-Type": "application/json"
+         },
+         body: JSON.stringify({ product_id: productId, name, price })
+       });
+   
+       if (!res.ok) {
+         const txt = await res.text();
+         console.error("Add to cart failed:", res.status, txt);
+         showToast("Failed to add to cart");
+         return;
+       }
+   
+       showToast(`✅ ${name} added to cart`);
+       // re-fetch cart from server to update UI
+       await renderCartFromServer();
+     } catch (err) {
+       console.error("addToCart error:", err);
+       showToast("Something went wrong");
+     }
+   }
+   
+   // Remove item from database cart by item id
+   async function removeFromCart(event, index) {
+     event.preventDefault();
+     event.stopPropagation();
+   
+     try {
+        const token = getToken();
+     if (!token) {
+       showToast("⚠️ Please log in to view your cart");
+       return;
+     }
+   
+       const res = await fetch(`${API_BASE}/cart/cart_edit/${index}/`, {
+         method: "DELETE",
+         headers: { "Authorization": `Bearer ${token}` }
+       });
+   
+       if (res.status === 204 || res.ok) {
+         showToast("🗑️ Item removed");
+         await renderCartFromServer();
+       } else {
+         const txt = await res.text();
+         console.error("Remove failed:", res.status, txt);
+         showToast("Remove failed");
+       }
+     } catch (err) {
+       console.error("removeFromCart error:", err);
+       showToast("Something went wrong");
+     }
+   }
+   
+   // Helper: simple HTML escape to avoid injection when rendering product names
+   function escapeHtml(str) {
+     if (!str) return "";
+     return String(str).replace(/[&<>"']/g, function (m) {
+       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+     });
+   }
+   
+   // --------------- PRODUCTS & SEARCH ---------------
+   async function loadProducts() {
+     try {
+       const res = await fetch(`${API_BASE}/product/`);
+       const products = await res.json();
+   
+       const section = document.getElementById("pdfSection");
+       section.innerHTML = "";
+   
+   products.forEach(prod => {
+     section.innerHTML += `
+     <div class="pdf-card flex bg-white rounded-xl p-4 shadow-lg border border-gray-100" data-title="${escapeHtml(prod.name)}">
+       <div class="w-32 h-32 bg-gray-200 mr-4 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+         <!-- PDF Icon instead of image -->
+         <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+           <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm9 0v5h5M9 14h6v2H9zm0 4h6v2H9z"/>
+         </svg>
+       </div>
+       <div class="flex-grow">
+         <div class="flex justify-between items-start mb-1">
+           <h4 class="text-lg font-bold text-gray-800">${escapeHtml(prod.name)}</h4>
+           <p class="text-lg font-bold text-blue-600">₦${prod.price}</p>
+         </div>
+         <div class="flex space-x-2 mb-2">
+           ${prod.tags ? prod.tags.map(tag => `<span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded">${escapeHtml(tag)}</span>`).join('') : ''}
+         </div>
+         <p class="text-sm text-gray-600 mb-2">${escapeHtml(prod.description)}</p>
+         <div class="flex justify-between items-center mt-3">
+           <p class="text-sm text-yellow-500">★★★★☆ <span class="text-gray-600">${prod.rating || '4.00'}</span></p>
+           <button 
+             class="px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition duration-150 addCartBtn"
+             data-product-id="${prod.id}"
+             data-name="${escapeHtml(prod.name)}"
+             data-price="${prod.price}">
+             Add to cart
+           </button>
+         </div>
+       </div>
+     </div>
+     `;
+   });
+   
+   
+       // attach listeners
+       document.querySelectorAll(".addCartBtn").forEach(btn => {
+         btn.addEventListener("click", (event) => {
+           const productId = btn.dataset.productId;
+           const name = btn.dataset.name;
+           const price = Number(btn.dataset.price);
+           addToCart(event, productId, name, price);
+         });
+       });
+   
+     } catch (error) {
+       console.error("Error loading products:", error);
+     }
+   }
+   
+   
+   function searchPDFs() {
+     const input = document.getElementById("searchInput").value.toLowerCase();
+     document.querySelectorAll(".pdf-card").forEach(card => {
+       const title = card.getAttribute("data-title").toLowerCase();
+       card.style.display = title.includes(input) ? "block" : "none";
+     });
+   }
+   
+   // =================== CHECKOUT ===================
+   async function checkoutCart(event) {
+       event.preventDefault();
+       const cart = await renderCartFromServer();
+       if (cart.length === 0) return alert("Cart is empty!");
+   
+       const res = await fetch(`${API_BASE}/initialize_payment/`, {
+           method: "POST",
+           headers: {
+               "Content-Type": "application/json",
+               "Authorization": `Bearer ${getToken()}`
+   
+           },
+           body: JSON.stringify({ items: cart })
+       });
+   
+       const data = await res.json();
+       if (data.authorization_url) {
+           window.location.href = data.authorization_url; // redirect to Paystack
+       } else {
+           alert("Payment initialization failed");
+       }
+   }
+   
+   // =================== VERIFY AFTER REDIRECT ===================
+   document.addEventListener("DOMContentLoaded", async () => {
+       await loadUser();
+       await loadProducts();
+   
+       const params = new URLSearchParams(window.location.search);
+       const reference = params.get("reference");
+       const cart = await renderCartFromServer(); // returns array
+   
+       if (!reference || cart.length === 0) return;
+   
+       try {
+           // Verify payment and create order
+           const res = await fetch(`${API_BASE}/verify_and_create_order/`, {
+               method: "POST",
+               headers: {
+                   "Content-Type": "application/json",
+                   "Authorization": `Bearer ${getToken()}`
+               },
+               body: JSON.stringify({ reference, items: cart })
+           });
+   
+           const data = await res.json();
+   
+           if (data.status === "success") {
+               // Clear cart via API
+               try {
+                   const clearRes = await fetch(`${API_BASE}/cart/clear_cart/`, {
+                       method: "DELETE",
+                       headers: {
+                           "Content-Type": "application/json",
+                           "Authorization": `Bearer ${getToken()}`
+                       }
+                   });
+   
+                   if (clearRes.ok) {
+                     // Re-render cart as empty
+                       _renderCartItems([]);
+                       
+                       showToast("✅ Payment Confirmed! Cart cleared.");
+                       // Re-render cart as empty
+                       _renderCartItems([]);
+   
+                       // Remove query params
+                       window.history.replaceState({}, document.title, "/index.html");
+                   } else {
+                       showToast("⚠️ Payment confirmed but failed to clear cart.");
+                   }
+               } catch (err) {
+                   console.error(err);
+                   showToast("⚠️ Payment confirmed but error clearing cart.");
+               }
+   
+           } else {
+               showToast("❌ Payment verification failed!");
+           }
+   
+       } catch (err) {
+           console.error(err);
+           showToast("Something went wrong during verification!");
+       }
+   
+       // Refresh user and products just in case
+       await loadUser();
+       await loadProducts();
+   });
+   
+   
+   // UI helpers
+   function toggleCart(event) {
+     event?.preventDefault();
+     event?.stopPropagation();
+     const token = getToken();
+     if (!token) {
+       showToast("⚠️ Please log in or sign up to view your cart.");
+       return;
+     }
+     document.getElementById("cartModal").classList.toggle("hidden");
+   }
+   
+   function showToast(msg) {
+     const toast = document.getElementById("toast");
+     toast.textContent = msg;
+     toast.classList.remove("hidden");
+     toast.classList.remove("opacity-0");
+     setTimeout(() => {
+       toast.classList.add("opacity-0");
+       setTimeout(() => toast.classList.add("hidden"), 500);
+     }, 3000);
+   }
+   
+   // ---------------- INIT ----------------
+   document.addEventListener("DOMContentLoaded", async () => {
+     await loadUser();
+     await renderCartFromServer(); // fetch cart from DB and render
+     await loadProducts();
+   });
+   
+   // Expose some functions for inline onclick handlers
+   window.removeFromCart = removeFromCart;
+   window.toggleCart = toggleCart;
+   window.searchPDFs = searchPDFs;
+   window.checkoutCart = checkoutCart;
+   
+   const mobileBtn = document.getElementById("mobileBtn");
+   const mobileMenu = document.getElementById("mobileMenu");
+   mobileBtn.addEventListener("click", (e) => {
+     e.preventDefault();
+     e.stopPropagation();
+     mobileMenu.classList.toggle("hidden");
+   });
+   </script>
+   
+</body>
+</html>

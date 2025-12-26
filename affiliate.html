@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+  <title>Become an Affiliate</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <nav class="bg-white shadow p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">AI PDF Store</h1>
+    <div>
+      <a href="index.html" class="text-blue-600 hover:underline">Home</a>
+    </div>
+  </nav>
+
+  <section class="text-center py-16">
+    <h2 class="text-3xl font-bold mb-4">Join Our Affiliate Program</h2>
+    <p class="text-gray-600 max-w-xl mx-auto mb-6">
+      Become an affiliate and earn commission each time someone purchases 
+      using your unique referral link. It’s free and only takes a few seconds to start!
+    </p>
+    
+    <button id="affiliateBtn" onclick="becomeAffiliate()" 
+      class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700">
+      Become an Affiliate
+    </button>
+
+    <p id="statusMsg" class="text-sm text-gray-500 mt-4"></p>
+  </section>
+
+
+  <script>
+
+const API_URL = "http://127.0.0.1:8000/api/auth";
+
+function getToken() {
+
+
+  const token =localStorage.getItem("access_token");
+  if(token){
+    return token;
+  
+  }
+  window.location.href='login.html'
+  
+  }
+  
+
+async function checkAffiliateStatus() {
+  const statusMsg = document.getElementById("statusMsg");
+  const affiliateBtn = document.getElementById("affiliateBtn");
+  const token =getToken();
+
+  if (!token) {
+    statusMsg.textContent = "⚠️ Please log in to join the affiliate program.";
+    affiliateBtn.disabled = true;
+    return;
+  }
+
+  const res = await fetch(`${API_URL}/affiliate/status/`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (res.status === 401) {
+    statusMsg.textContent = "⚠️ Login expired — please login again.";
+    affiliateBtn.disabled = true;
+    return;
+  }
+
+  const data = await res.json();
+
+  if (data.is_affiliate) {
+    statusMsg.textContent = "✅ You are already an affiliate.";
+    affiliateBtn.textContent = "Go to Dashboard";
+    affiliateBtn.onclick = () => window.location.href = "dashboard.html";
+  }
+}
+
+async function becomeAffiliate() {
+  const token =getToken();
+  if (!token) {
+    alert("Please login first");
+    return;
+  }
+
+  const res = await fetch(`${API_URL}/affiliate/activate/`, {
+    method: "POST",
+    headers: { 
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+  });
+
+  const data = await res.json();
+  
+  if (res.ok) {
+    document.getElementById("statusMsg").textContent =
+      "🎉 Success! Redirecting to your dashboard...";
+    setTimeout(() => window.location.href = "dashboard.html", 1500);
+  } else {
+    alert("Error: " + data.message);
+  }
+}
+
+window.onload = checkAffiliateStatus;
+window.becomeAffiliate = becomeAffiliate;
+</script>
+
+</body>
+</html>
